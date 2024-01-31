@@ -7,25 +7,25 @@ from tokenizer import tokenize_utterances
 from generate_karaoke_subs import make_karaoke
 
 INPUT_FILE = "./nichibros/nichibros1.ass"
-DO_FIRST_N_UTTERANCES = 6
+DO_FIRST_N_UTTERANCES = 16
 
 subs_no_parens, utterances = preprocess_subs(INPUT_FILE)
 
 utterances = utterances[:DO_FIRST_N_UTTERANCES]
 
-utterances_tokenized, tokens_hiragana = tokenize_utterances(utterances)
+utterances_tokenized, tokens_kanji, tokens_hiragana = tokenize_utterances(utterances)
 
 with connect("ws://localhost:45054") as echogarden:
     alignment_request = {
         "messageType": "AlignmentRequest",
         "requestId": str(uuid.uuid4()),
-        "input": "../nichibros/nichibros-intro.wav", # TODO: fix me
-        "transcript": tokens_hiragana,
+        "input": "../nichibros/nichibros-intro-long.wav", # TODO: fix me
+        "transcript": tokens_kanji,
         "options": {
             "engine": "whisper",
             "language": "ja",
             "whisper": {
-                "model": "medium",
+                "model": "tiny",
             },
             "plainText": {
                 "paragraphBreaks": "double",

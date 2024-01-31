@@ -9,6 +9,7 @@ from japaneseanalyzer import JapaneseAnalyzer
 import pykakasi
 kks = pykakasi.kakasi()
 kks.setMode("J", "H")
+kks.setMode("K", "H")
 kks.setMode("s", True)
 conv = kks.getConverter()
 
@@ -17,6 +18,7 @@ analyzer = JapaneseAnalyzer()
 def tokenize_utterances(utterances: list[str]):
     utterances_tokenized = []
     tokens_hiragana = ""
+    tokens_kanji = ""
 
     for utterance in utterances:
         tokens = [{"token": token["token"], "meaning": token["def"]["meaning"]} for token in analyzer.tokenize(utterance)]
@@ -28,7 +30,9 @@ def tokenize_utterances(utterances: list[str]):
 
         for token in tokens:
             tokens_hiragana += token["pron"] + "\n"
+            tokens_kanji += token["token"] + "\n"
 
         tokens_hiragana += "\n"
+        tokens_kanji += "\n"
 
-    return utterances_tokenized, tokens_hiragana
+    return utterances_tokenized, tokens_kanji, tokens_hiragana

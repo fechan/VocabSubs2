@@ -16,5 +16,7 @@ def preprocess_subs(subtitle_path: str):
     for line in subs:
         line.text = re.sub(r"[\(\（].+[\)\）]\s?", "", line.text) # remove parentheticals
         utterances += line.text.strip().replace("\\N", "\n").split("\n")
+    
+    utterances = [u for u in utterances if len(u) > 0]
 
     return subs, utterances
