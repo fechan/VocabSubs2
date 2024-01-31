@@ -27,7 +27,7 @@ def tokenize_utterances(utterances: list[str]):
         utterances_tokenized.append(tokens)
 
         for token in tokens:
-            tokens_hiragana += token["pron"]
+            tokens_hiragana += token["pron"] + "\n"
 
         tokens_hiragana += "\n"
 
