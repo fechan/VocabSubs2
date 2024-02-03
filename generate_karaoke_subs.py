@@ -40,7 +40,9 @@ def make_karaoke(real_segments: list[list[dict]], whisper_segments):
                 # the next whisper word has nothing to do with the current real token,
                 # so the current real token might be punctuation or something and
                 # cannot be timed
-                print("Ignoring token", token["token"], "because it could not be timed")
+                if token_no - 1 >= 0:
+                    real_segment[token_no - 1]["meaning"] += token["token"]
+                print("Concatenating", token["token"], "with previous token because it could not be timed")
                 continue
 
             def concat_whisper_words(words):
