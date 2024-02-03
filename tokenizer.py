@@ -15,13 +15,15 @@ conv = kks.getConverter()
 
 analyzer = JapaneseAnalyzer()
 
-def tokenize_utterances(utterances: list[str]):
+def tokenize_utterances(utterances: list[str]) -> (list[list[dict]], str, str):
     utterances_tokenized = []
     tokens_hiragana = ""
     tokens_kanji = ""
 
     for utterance in utterances:
-        tokens = [{"token": token["token"], "meaning": token["def"]["meaning"]} for token in analyzer.tokenize(utterance)]
+        tokens_hiragana += "<s>"
+        tokens_kanji += "<s>"
+        tokens = [{"token": token["token"], "meaning": (token["def"]["meaning"] or token["token"])} for token in analyzer.tokenize(utterance)]
 
         for token in tokens:
             token["pron"] = conv.do(token["token"])
@@ -32,7 +34,7 @@ def tokenize_utterances(utterances: list[str]):
             tokens_hiragana += token["pron"] + "\n"
             tokens_kanji += token["token"] + "\n"
 
-        tokens_hiragana += "\n"
-        tokens_kanji += "\n"
+        tokens_hiragana += "</s>"
+        tokens_kanji += "</s>"
 
     return utterances_tokenized, tokens_kanji, tokens_hiragana

@@ -31,12 +31,12 @@ class JapaneseAnalyzer:
     def define_word(self, word):
         pos = PARTS_OF_SPEECH.get(word.feature.pos1, word.feature.pos1)
         if pos in ["particle", "whitespace", "auxverb", "punctuation"]:
-            return {"lemma": word.feature.lemma, "pron": word.feature.pron, "meaning": word.feature.lemma}
+            return {"lemma": word.feature.lemma, "pron": word.feature.pron, "meaning": word.surface}
 
         lemma = word.feature.lemma
         if lemma not in self.lemma_cache:
             try:
-                definition = self.jmd.lookup_iter(lemma, strict_lookup=True)
+                definition = self.jmd.lookup_iter(lemma)
 
                 entry = next(definition.entries)
                 # def_text = "\n".join(('* ' + sense.gloss[0].text for sense in entry.senses))
