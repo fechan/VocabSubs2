@@ -12,10 +12,17 @@ PARTS_OF_SPEECH = {
     "名詞": "noun",
     "感動詞": "adjective",
     "補助記号": "punctuation",
-    "名詞": "name",
     "接尾辞": "suffix",
     "副詞": "adverb",
 }
+
+UNTRANSLATED_WORDS = [
+    "particle",
+    "whitespace",
+    "auxverb",
+    "punctuation",
+    "suffix",
+]
 
 USE_JISHO = False
 
@@ -38,7 +45,7 @@ class JapaneseAnalyzer:
         surface_form = word
 
         pos = PARTS_OF_SPEECH.get(word_pos_ja, word_pos_ja)
-        if pos in ["particle", "whitespace", "auxverb", "punctuation"]:
+        if pos in UNTRANSLATED_WORDS:
             return {"lemma": lemma, "meaning": surface_form}
 
         if lemma not in self.lemma_cache:
