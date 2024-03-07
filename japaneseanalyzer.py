@@ -1,6 +1,5 @@
 import re
-# from fugashi import Tagger
-import nagisa
+from fugashi import Tagger
 from jamdict import Jamdict
 from jisho import get_jisho_def
 
@@ -11,9 +10,11 @@ PARTS_OF_SPEECH = {
     "動詞": "verb",
     "名詞": "noun",
     "感動詞": "adjective",
+    "形容詞": "adjective",
     "補助記号": "punctuation",
     "接尾辞": "suffix",
     "副詞": "adverb",
+    "代名詞": "pronoun",
 }
 
 UNTRANSLATED_WORDS = [
@@ -28,7 +29,7 @@ USE_JISHO = False
 
 class JapaneseAnalyzer:
     def __init__(self):
-        self.tagger = nagisa.tagging
+        self.tagger = Tagger("-Owakati")
         self.jmd = Jamdict()
 
         self.lemma_cache = {}
@@ -41,8 +42,8 @@ class JapaneseAnalyzer:
         return definition
 
     def define_word(self, word, word_pos_ja):
-        lemma = word
-        surface_form = word
+        lemma = word.feature.lemma
+        surface_form = word.surface
 
         pos = PARTS_OF_SPEECH.get(word_pos_ja, word_pos_ja)
         if pos in UNTRANSLATED_WORDS:
@@ -60,12 +61,13 @@ class JapaneseAnalyzer:
 
             try:
                 definition = self.jmd.lookup_iter(lemma)
-                entry = next(definition.entries)
-                
-                # if possible, try to match the part of speech returned by the tokenizer
-                possible_senses = [sense for sense in entry.senses if pos in sense.pos[0]]
-                if len(possible_senses) == 0:
-                    possible_senses = entry.senses
+
+                possible_senses = []
+                for entry in definition.entries:
+                    for sense in entry.senses:
+                        for sense_pos in sense.pos:
+                            if pos in sense_pos:
+                                possible_senses.append(sense)
                 sense = possible_senses[0]
 
                 definition = sense.gloss[0].text
@@ -88,12 +90,12 @@ class JapaneseAnalyzer:
         tokens = []
 
         tagged_text = self.tagger(text)
-        for word_idx, word in enumerate(tagged_text.words):
-            if re.match("^\s+$", word):
-                continue
+        for word_idx, word in enumerate(tagged_text):
+            # if re.match("^\s+$", word):
+                # continue
 
             if define_tokens:
-                word_pos = tagged_text.postags[word_idx]
+                word_pos = word.feature.pos1
                 lemma_def = self.define_word(word, word_pos)
             else:
                 lemma_def = {
@@ -102,7 +104,7 @@ class JapaneseAnalyzer:
                 }
 
             tokens.append({
-                "token": word,
+                "token": word.surface,
                 "def": lemma_def
             })
 
