@@ -9,7 +9,7 @@ from generate_karaoke_subs import make_karaoke
 INPUT_AUDIO = "./nichibros/nichibros1.mkv"
 INPUT_FILE = "./nichibros/nichibros1.ass"
 CLIPS_DIR = "./nichibros/clips/"
-DEVICE = "cpu"
+DEVICE = "cuda"
 DO_FIRST_N_UTTERANCES = 999999
 
 shutil.rmtree(CLIPS_DIR)
@@ -38,25 +38,24 @@ max_clip_length = 29 * 1000 # in milliseconds. whisperx only supports sub-30 sec
 clips = []
 current_clip_sub_texts = []
 current_clip_start = subs_no_parens[0].start # in milliseconds
+current_clip_end = subs_no_parens[0].end
 
 audio = ffmpeg.input(INPUT_AUDIO).audio
 
 for sub_num, subtitle in enumerate(subs_no_parens[:min(DO_FIRST_N_UTTERANCES, len(subs_no_parens))]):
     out_clip_path = CLIPS_DIR + str(current_clip_start) + ".wav"
     if subtitle.end - current_clip_start > max_clip_length:
-        clips.append(make_clip(current_clip_sub_texts, out_clip_path, current_clip_start, subtitle.end))
+        clips.append(make_clip(current_clip_sub_texts, out_clip_path, current_clip_start, current_clip_end))
         
         current_clip_sub_texts = [subtitle.text]
         current_clip_start = subtitle.start
-        current_clip_length = subtitle.duration
     else:
         current_clip_sub_texts.append(subtitle.text)
+    current_clip_end = subtitle.end
         
-clips.append(make_clip(current_clip_sub_texts, out_clip_path, current_clip_start, subtitle.end))
+clips.append(make_clip(current_clip_sub_texts, out_clip_path, current_clip_start, current_clip_end))
 
 import whisperx
-import torch
-import gc
 align_model, metadata = whisperx.load_align_model(language_code="ja", device=DEVICE)
 
 def offset_whisper_segments(whisper_segments, offset_s):

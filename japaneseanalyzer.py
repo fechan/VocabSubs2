@@ -1,6 +1,7 @@
+import re
 from fugashi import Tagger
 from jamdict import Jamdict
-import re
+from jisho import get_jisho_def
 
 PARTS_OF_SPEECH = {
     "助詞": "particle",
@@ -12,6 +13,8 @@ PARTS_OF_SPEECH = {
     "補助記号": "punctuation",
 }
 
+USE_JISHO = False
+
 class JapaneseAnalyzer:
     def __init__(self):
         self.tagger = Tagger("-Owakati")
@@ -19,14 +22,12 @@ class JapaneseAnalyzer:
 
         self.lemma_cache = {}
 
-    def get_definition_string(self, entry, pos):
-        sense = [sense for sense in entry.senses if pos in sense.pos[0]][0]
-        definition = sense.gloss[0].text
-        definition = re.sub("\s?\(.+\)\s?", "", definition)
-        if pos == "verb":
+    def get_definition_string(self, definition, pos):
+        definition = re.sub("\s?\(.+\)\s?", " ", definition)
+        if "verb" in pos:
             definition = re.sub("^to ", "", definition)
-        definition = re.sub("\s+", ".", definition)
-        return definition    
+        definition = re.sub("\s+", ".", definition.strip())
+        return definition
 
     def define_word(self, word):
         pos = PARTS_OF_SPEECH.get(word.feature.pos1, word.feature.pos1)
@@ -35,16 +36,34 @@ class JapaneseAnalyzer:
 
         lemma = word.feature.lemma
         if lemma not in self.lemma_cache:
+            if re.match("^[ァ-ン]+$", word.surface): # if it's all katakana, jamdict has issues lemmatizing it
+                jisho_result = get_jisho_def(word.surface) if USE_JISHO else None
+                if jisho_result != None:
+                    jisho_result["meaning"] = self.get_definition_string(jisho_result["meaning"], jisho_result["pos"])
+                    self.lemma_cache[lemma] = jisho_result
+                    return jisho_result
+                else:
+                    return {"lemma": word.surface, "pron": word.feature.pron, "meaning": word.surface}
+
             try:
                 definition = self.jmd.lookup_iter(lemma)
 
                 entry = next(definition.entries)
                 # def_text = "\n".join(('* ' + sense.gloss[0].text for sense in entry.senses))
-                def_text = self.get_definition_string(entry, pos)
+                sense = [sense for sense in entry.senses if pos in sense.pos[0]][0]
+                definition = sense.gloss[0].text
+                def_text = self.get_definition_string(definition, pos)
                 self.lemma_cache[lemma] = {"lemma": lemma, "pron": str(entry.kana_forms[0]), "meaning": def_text}
 
             except (ValueError, IndexError, StopIteration):
-                self.lemma_cache[lemma] = {"lemma": word.surface, "pron": word.feature.pron or "", "meaning": word.surface}
+                if re.match("([^ぁ-んァ-ンA-z])", word.surface):
+                    jisho_result = get_jisho_def(word.surface) if USE_JISHO else None
+                    if jisho_result != None:
+                        jisho_result["meaning"] = self.get_definition_string(jisho_result["meaning"], jisho_result["pos"])
+                        self.lemma_cache[lemma] = jisho_result
+
+                if lemma not in self.lemma_cache:
+                    self.lemma_cache[lemma] = {"lemma": word.surface, "pron": word.feature.pron or "", "meaning": word.surface}
             
         return self.lemma_cache[lemma]
 
