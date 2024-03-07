@@ -32,7 +32,7 @@ class JapaneseAnalyzer:
     def define_word(self, word):
         pos = PARTS_OF_SPEECH.get(word.feature.pos1, word.feature.pos1)
         if pos in ["particle", "whitespace", "auxverb", "punctuation"]:
-            return {"lemma": word.feature.lemma, "pron": word.feature.pron, "meaning": word.surface}
+            return {"lemma": word.feature.lemma, "meaning": word.surface}
 
         lemma = word.feature.lemma
         if lemma not in self.lemma_cache:
@@ -43,7 +43,7 @@ class JapaneseAnalyzer:
                     self.lemma_cache[lemma] = jisho_result
                     return jisho_result
                 else:
-                    return {"lemma": word.surface, "pron": word.feature.pron, "meaning": word.surface}
+                    return {"lemma": word.surface, "meaning": word.surface}
 
             try:
                 definition = self.jmd.lookup_iter(lemma)
@@ -53,7 +53,7 @@ class JapaneseAnalyzer:
                 sense = [sense for sense in entry.senses if pos in sense.pos[0]][0]
                 definition = sense.gloss[0].text
                 def_text = self.get_definition_string(definition, pos)
-                self.lemma_cache[lemma] = {"lemma": lemma, "pron": str(entry.kana_forms[0]), "meaning": def_text}
+                self.lemma_cache[lemma] = {"lemma": lemma, "meaning": def_text}
 
             except (ValueError, IndexError, StopIteration):
                 if re.match("([^ぁ-んァ-ンA-z])", word.surface):
@@ -63,17 +63,16 @@ class JapaneseAnalyzer:
                         self.lemma_cache[lemma] = jisho_result
 
                 if lemma not in self.lemma_cache:
-                    self.lemma_cache[lemma] = {"lemma": word.surface, "pron": word.feature.pron or "", "meaning": word.surface}
+                    self.lemma_cache[lemma] = {"lemma": word.surface, "meaning": word.surface}
             
         return self.lemma_cache[lemma]
 
     def tokenize(self, text, define_tokens=True):
         tokens = []
         for word in self.tagger(text):
-            lemma_def = self.define_word(word) if define_tokens else {"lemma": None, "pron": None, "meaning": None}
+            lemma_def = self.define_word(word) if define_tokens else {"lemma": None, "meaning": None}
             tokens.append({
                 "token": word.surface,
-                "pron": word.feature.pron,
                 "def": lemma_def
             })
 
