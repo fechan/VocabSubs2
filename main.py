@@ -9,21 +9,24 @@ from generate_karaoke_subs import make_karaoke
 INPUT_AUDIO = "./nichibros/nichibros1.mkv"
 INPUT_FILE = "./nichibros/nichibros1.ass"
 CLIPS_DIR = "./nichibros/clips/"
+WRITE_CLIPS = True # You can set this to False iff you've already generated audio clips before
 DEVICE = "cuda"
-DO_FIRST_N_UTTERANCES = 999999
+DO_FIRST_N_UTTERANCES = 25
 
-shutil.rmtree(CLIPS_DIR)
-os.mkdir(CLIPS_DIR)
+if WRITE_CLIPS:
+    shutil.rmtree(CLIPS_DIR)
+    os.mkdir(CLIPS_DIR)
 
 subs_no_parens, utterances = preprocess_subs(INPUT_FILE)
 
 # cut up audio according to subs_no_parens
 def make_clip(subtitles, out_clip_path, current_clip_start, current_clip_end):
     current_clip_length = current_clip_end - current_clip_start
-    (audio.filter("atrim", start=current_clip_start/1000, duration=current_clip_length/1000)
-        .output(out_clip_path)
-        .run()
-    )
+    if WRITE_CLIPS:
+        (audio.filter("atrim", start=current_clip_start/1000, duration=current_clip_length/1000)
+            .output(out_clip_path)
+            .run()
+        )
     tokens, tokens_kanji, tokens_hiragana = tokenize_utterances(subtitles)
     return {
         "path": out_clip_path,
