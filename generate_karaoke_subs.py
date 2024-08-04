@@ -64,6 +64,7 @@ def make_karaoke(real_segments: list[list[dict]], whisper_segments):
             text = get_karaoke_for_segment(timed_tokens)
 
             out_sub_track.events.append(pysubs2.SSAEvent(start=start_time, end=end_time, effect="karaoke", text=text))
+            print("subs |", text)
         except:
             print("Unable to make karaoke subtitle for this segment!")
 
