@@ -22,4 +22,4 @@ It uses the following projects, in order:
 1. [Fugashi](https://pypi.org/project/fugashi/), a Cython wrapper [MeCab](https://taku910.github.io/mecab/), a Japanese tokenizer and morphological analyzer
 2. [PyKakasi](https://pypi.org/project/pykakasi/), a Japanese NLP tool for converting between Kanji and {Hira/Kata}Kana
 3. [JamDict](https://pypi.org/project/jamdict/), a Python3 library for working with the JMDict Japanese dictionary
-4. [https://github.com/m-bain/whisperX](WhisperX), a fork of Whisper, used here for forced alignment between audio and existing text
+4. [WhisperX](https://github.com/m-bain/whisperX), a fork of Whisper, used here for forced alignment between audio and existing text
