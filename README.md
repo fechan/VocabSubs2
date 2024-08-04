@@ -10,6 +10,13 @@ Compared to regular English translated subtitles, this prevents the viewer from 
 
 A blog post describing how this works is forthcoming.
 
+# Results
+This project is only a proof-of-concept. It *does* work, and I personally think it helps you learn vocabulary. **However:**
+* Certain words are misanalyzed grammatically. For example, names are sometimes translated literally instead of left as names.
+* Certain words have verbose definitions that take up a lot of space in the subtitle.
+* There are some occasional timing glitches. Nothing to render it unwatchable, but noticeable every so often.
+* It's not very pretty. This is just an aesthetic thing, and could probably be fixed with an update fairly easily.
+
 # Credits
 It uses the following projects, in order:
 1. [Fugashi](https://pypi.org/project/fugashi/), a Cython wrapper [MeCab](https://taku910.github.io/mecab/), a Japanese tokenizer and morphological analyzer
