@@ -24,7 +24,25 @@ def get_karaoke_for_segment(segment):
 def concat_whisper_words(words):
     return "".join([word["word"] for word in words])
 
-def make_karaoke(real_segments: list[list[dict]], whisper_segments):
+def make_karaoke(real_segments: list[list[dict]], whisper_segments: list[list[dict]]):
+    """ Get a karaoke subtitle track based on the handmade ("real") Japanese
+        subs and the token-timed whisper segments.
+
+        High level overview:
+        Inputs: The segments in each utterance in real_segments has been timed and defined,
+        and that information is in whisper_segments.
+        1. For each real utterance, we get the corresponding utterance in whisper_segments
+        2. For each token in the real utterance, we see if the next token in the whisper
+           utterance matches it.
+        3. If it *is not* a match, we just put the real token in the final subtitles,
+           either as punctuation as untranslatable
+        4. If it *is* a match, put its definition in the final subtitles.
+        5. Keep going through utterances until we've exhausted all real subtitles.
+
+        Arguments:
+        real_segments -- List of real utterances, incl. punctuation. Each utterance is a list of tokens from the real subtitles.
+        whisper_segments -- List of whipser utterances. Each utterance is a list of tokens with timing and definitions.
+    """
     out_sub_track = pysubs2.SSAFile()
 
     for segment_no, real_segment in enumerate(real_segments):
