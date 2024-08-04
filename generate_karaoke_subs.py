@@ -21,6 +21,9 @@ def get_karaoke_for_segment(segment):
 
     return out
 
+def concat_whisper_words(words):
+    return "".join([word["word"] for word in words])
+
 def make_karaoke(real_segments: list[list[dict]], whisper_segments):
     out_sub_track = pysubs2.SSAFile()
 
@@ -45,14 +48,9 @@ def make_karaoke(real_segments: list[list[dict]], whisper_segments):
                 print("Concatenating", token["token"], "with previous token because it could not be timed")
                 continue
 
-            def concat_whisper_words(words):
-                return "".join([word["word"] for word in words])
-
-            first_token = True # is this the first whisper word we've checked for correspondence with the current real token?
             while token["token"] != concat_whisper_words(corresponding_whisper_words):
                 if len(whisper_words) == 0: break
                 corresponding_whisper_words.append(whisper_words.pop(0))
-                first_token = False
 
             token["startTime"] = corresponding_whisper_words[0]["start"]
             token["endTime"] = corresponding_whisper_words[-1]["end"]
