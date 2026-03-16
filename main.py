@@ -58,7 +58,7 @@ for sub_num, subtitle in enumerate(subs_no_parens[:min(DO_FIRST_N_UTTERANCES, le
         
 clips.append(make_clip(current_clip_sub_texts, out_clip_path, current_clip_start, current_clip_end))
 
-import whisperx
+import whisperx # since loading the whisperx module is slow, we import it down here in case you're debugging changes to parts of code before we need whisperx
 align_model, metadata = whisperx.load_align_model(language_code="ja", device=DEVICE)
 
 def offset_whisper_segments(whisper_segments, offset_s):
